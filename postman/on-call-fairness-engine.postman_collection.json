@@ -1,0 +1,889 @@
+{
+  "info": {
+    "name": "On-Call Fairness Engine Postman Collection",
+    "description": "Intelligent on-call rotation management platform. Balances on-call burden \nfairly across engineers by considering weekends, holidays, night shifts, \nincident load, and personal preferences. Tracks burnout risk, enforces \nlabor regulations, and provides transparent fairness scores so every \nengineer sees they are being treated equally.\n\nOpenAPI version: 3.0.3",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://oncallfairness.forgesphere.lightning.com/v1",
+      "type": "string",
+      "description": "Override with the base URL of the deployed Kong gateway."
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "rotationId",
+      "value": "",
+      "type": "string",
+      "description": "Unique identifier of the rotation."
+    },
+    {
+      "key": "fromDate",
+      "value": "",
+      "type": "string",
+      "description": "Start date of the schedule window."
+    },
+    {
+      "key": "toDate",
+      "value": "",
+      "type": "string",
+      "description": "End date of the schedule window."
+    },
+    {
+      "key": "shiftId",
+      "value": "",
+      "type": "string",
+      "description": "Unique identifier of the shift."
+    },
+    {
+      "key": "windowDays",
+      "value": "",
+      "type": "string",
+      "description": "How far back to analyze (days)."
+    }
+  ],
+  "item": [
+    {
+      "name": "Create a new on-call rotation",
+      "request": {
+        "method": "POST",
+        "description": "Create a new on-call rotation\n\nResponses:\n- 201: Rotation created and schedule generated.\n- 400: Response\n- 409: A rotation with this name already exists for the team.\n- 500: Response",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/rotations",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "rotations"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [
+        {
+          "name": "201 Rotation created and schedule generated.",
+          "originalRequest": {
+            "method": "POST",
+            "description": "Create a new on-call rotation\n\nResponses:\n- 201: Rotation created and schedule generated.\n- 400: Response\n- 409: A rotation with this name already exists for the team.\n- 500: Response",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/rotations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rotations"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "status": "Rotation created and schedule generated.",
+          "code": 201,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "body": ""
+        },
+        {
+          "name": "400",
+          "originalRequest": {
+            "method": "POST",
+            "description": "Create a new on-call rotation\n\nResponses:\n- 201: Rotation created and schedule generated.\n- 400: Response\n- 409: A rotation with this name already exists for the team.\n- 500: Response",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/rotations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rotations"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "status": "400",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "body": ""
+        },
+        {
+          "name": "409 A rotation with this name already exists for the team.",
+          "originalRequest": {
+            "method": "POST",
+            "description": "Create a new on-call rotation\n\nResponses:\n- 201: Rotation created and schedule generated.\n- 400: Response\n- 409: A rotation with this name already exists for the team.\n- 500: Response",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/rotations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rotations"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "status": "A rotation with this name already exists for the team.",
+          "code": 409,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "body": ""
+        },
+        {
+          "name": "500",
+          "originalRequest": {
+            "method": "POST",
+            "description": "Create a new on-call rotation\n\nResponses:\n- 201: Rotation created and schedule generated.\n- 400: Response\n- 409: A rotation with this name already exists for the team.\n- 500: Response",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/rotations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rotations"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "status": "500",
+          "code": 500,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "body": ""
+        }
+      ]
+    },
+    {
+      "name": "Get the generated on-call schedule",
+      "request": {
+        "method": "GET",
+        "description": "Get the generated on-call schedule\n\nResponses:\n- 200: On-call schedule with fairness analysis.\n- 404: Response\n- 500: Response",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/rotations/:rotationId/schedule?fromDate={{fromDate}}&toDate={{toDate}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "rotations",
+            ":rotationId",
+            "schedule"
+          ],
+          "query": [
+            {
+              "key": "fromDate",
+              "value": "{{fromDate}}",
+              "disabled": true,
+              "description": "Start date of the schedule window."
+            },
+            {
+              "key": "toDate",
+              "value": "{{toDate}}",
+              "disabled": true,
+              "description": "End date of the schedule window."
+            }
+          ],
+          "variable": [
+            {
+              "key": "rotationId",
+              "value": "{{rotationId}}",
+              "description": "Unique identifier of the rotation."
+            }
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "200 On-call schedule with fairness analysis.",
+          "originalRequest": {
+            "method": "GET",
+            "description": "Get the generated on-call schedule\n\nResponses:\n- 200: On-call schedule with fairness analysis.\n- 404: Response\n- 500: Response",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/rotations/:rotationId/schedule?fromDate={{fromDate}}&toDate={{toDate}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rotations",
+                ":rotationId",
+                "schedule"
+              ],
+              "query": [
+                {
+                  "key": "fromDate",
+                  "value": "{{fromDate}}",
+                  "disabled": true,
+                  "description": "Start date of the schedule window."
+                },
+                {
+                  "key": "toDate",
+                  "value": "{{toDate}}",
+                  "disabled": true,
+                  "description": "End date of the schedule window."
+                }
+              ],
+              "variable": [
+                {
+                  "key": "rotationId",
+                  "value": "{{rotationId}}",
+                  "description": "Unique identifier of the rotation."
+                }
+              ]
+            }
+          },
+          "status": "On-call schedule with fairness analysis.",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "body": ""
+        },
+        {
+          "name": "404",
+          "originalRequest": {
+            "method": "GET",
+            "description": "Get the generated on-call schedule\n\nResponses:\n- 200: On-call schedule with fairness analysis.\n- 404: Response\n- 500: Response",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/rotations/:rotationId/schedule?fromDate={{fromDate}}&toDate={{toDate}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rotations",
+                ":rotationId",
+                "schedule"
+              ],
+              "query": [
+                {
+                  "key": "fromDate",
+                  "value": "{{fromDate}}",
+                  "disabled": true,
+                  "description": "Start date of the schedule window."
+                },
+                {
+                  "key": "toDate",
+                  "value": "{{toDate}}",
+                  "disabled": true,
+                  "description": "End date of the schedule window."
+                }
+              ],
+              "variable": [
+                {
+                  "key": "rotationId",
+                  "value": "{{rotationId}}",
+                  "description": "Unique identifier of the rotation."
+                }
+              ]
+            }
+          },
+          "status": "404",
+          "code": 404,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "body": ""
+        },
+        {
+          "name": "500",
+          "originalRequest": {
+            "method": "GET",
+            "description": "Get the generated on-call schedule\n\nResponses:\n- 200: On-call schedule with fairness analysis.\n- 404: Response\n- 500: Response",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/rotations/:rotationId/schedule?fromDate={{fromDate}}&toDate={{toDate}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rotations",
+                ":rotationId",
+                "schedule"
+              ],
+              "query": [
+                {
+                  "key": "fromDate",
+                  "value": "{{fromDate}}",
+                  "disabled": true,
+                  "description": "Start date of the schedule window."
+                },
+                {
+                  "key": "toDate",
+                  "value": "{{toDate}}",
+                  "disabled": true,
+                  "description": "End date of the schedule window."
+                }
+              ],
+              "variable": [
+                {
+                  "key": "rotationId",
+                  "value": "{{rotationId}}",
+                  "description": "Unique identifier of the rotation."
+                }
+              ]
+            }
+          },
+          "status": "500",
+          "code": 500,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "body": ""
+        }
+      ]
+    },
+    {
+      "name": "Request a shift swap between two engineers",
+      "request": {
+        "method": "POST",
+        "description": "Request a shift swap between two engineers\n\nResponses:\n- 200: Swap applied and schedule updated.\n- 400: Response\n- 404: Response\n- 409: Swap would violate fairness rules or constraints.\n- 500: Response",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/rotations/:rotationId/shifts/:shiftId/swap",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "rotations",
+            ":rotationId",
+            "shifts",
+            ":shiftId",
+            "swap"
+          ],
+          "variable": [
+            {
+              "key": "rotationId",
+              "value": "{{rotationId}}",
+              "description": "Unique identifier of the rotation."
+            },
+            {
+              "key": "shiftId",
+              "value": "{{shiftId}}",
+              "description": "Unique identifier of the shift."
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [
+        {
+          "name": "200 Swap applied and schedule updated.",
+          "originalRequest": {
+            "method": "POST",
+            "description": "Request a shift swap between two engineers\n\nResponses:\n- 200: Swap applied and schedule updated.\n- 400: Response\n- 404: Response\n- 409: Swap would violate fairness rules or constraints.\n- 500: Response",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/rotations/:rotationId/shifts/:shiftId/swap",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rotations",
+                ":rotationId",
+                "shifts",
+                ":shiftId",
+                "swap"
+              ],
+              "variable": [
+                {
+                  "key": "rotationId",
+                  "value": "{{rotationId}}",
+                  "description": "Unique identifier of the rotation."
+                },
+                {
+                  "key": "shiftId",
+                  "value": "{{shiftId}}",
+                  "description": "Unique identifier of the shift."
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "status": "Swap applied and schedule updated.",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "body": ""
+        },
+        {
+          "name": "400",
+          "originalRequest": {
+            "method": "POST",
+            "description": "Request a shift swap between two engineers\n\nResponses:\n- 200: Swap applied and schedule updated.\n- 400: Response\n- 404: Response\n- 409: Swap would violate fairness rules or constraints.\n- 500: Response",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/rotations/:rotationId/shifts/:shiftId/swap",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rotations",
+                ":rotationId",
+                "shifts",
+                ":shiftId",
+                "swap"
+              ],
+              "variable": [
+                {
+                  "key": "rotationId",
+                  "value": "{{rotationId}}",
+                  "description": "Unique identifier of the rotation."
+                },
+                {
+                  "key": "shiftId",
+                  "value": "{{shiftId}}",
+                  "description": "Unique identifier of the shift."
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "status": "400",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "body": ""
+        },
+        {
+          "name": "404",
+          "originalRequest": {
+            "method": "POST",
+            "description": "Request a shift swap between two engineers\n\nResponses:\n- 200: Swap applied and schedule updated.\n- 400: Response\n- 404: Response\n- 409: Swap would violate fairness rules or constraints.\n- 500: Response",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/rotations/:rotationId/shifts/:shiftId/swap",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rotations",
+                ":rotationId",
+                "shifts",
+                ":shiftId",
+                "swap"
+              ],
+              "variable": [
+                {
+                  "key": "rotationId",
+                  "value": "{{rotationId}}",
+                  "description": "Unique identifier of the rotation."
+                },
+                {
+                  "key": "shiftId",
+                  "value": "{{shiftId}}",
+                  "description": "Unique identifier of the shift."
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "status": "404",
+          "code": 404,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "body": ""
+        },
+        {
+          "name": "409 Swap would violate fairness rules or constraints.",
+          "originalRequest": {
+            "method": "POST",
+            "description": "Request a shift swap between two engineers\n\nResponses:\n- 200: Swap applied and schedule updated.\n- 400: Response\n- 404: Response\n- 409: Swap would violate fairness rules or constraints.\n- 500: Response",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/rotations/:rotationId/shifts/:shiftId/swap",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rotations",
+                ":rotationId",
+                "shifts",
+                ":shiftId",
+                "swap"
+              ],
+              "variable": [
+                {
+                  "key": "rotationId",
+                  "value": "{{rotationId}}",
+                  "description": "Unique identifier of the rotation."
+                },
+                {
+                  "key": "shiftId",
+                  "value": "{{shiftId}}",
+                  "description": "Unique identifier of the shift."
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "status": "Swap would violate fairness rules or constraints.",
+          "code": 409,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "body": ""
+        },
+        {
+          "name": "500",
+          "originalRequest": {
+            "method": "POST",
+            "description": "Request a shift swap between two engineers\n\nResponses:\n- 200: Swap applied and schedule updated.\n- 400: Response\n- 404: Response\n- 409: Swap would violate fairness rules or constraints.\n- 500: Response",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/rotations/:rotationId/shifts/:shiftId/swap",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rotations",
+                ":rotationId",
+                "shifts",
+                ":shiftId",
+                "swap"
+              ],
+              "variable": [
+                {
+                  "key": "rotationId",
+                  "value": "{{rotationId}}",
+                  "description": "Unique identifier of the rotation."
+                },
+                {
+                  "key": "shiftId",
+                  "value": "{{shiftId}}",
+                  "description": "Unique identifier of the shift."
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "status": "500",
+          "code": 500,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "body": ""
+        }
+      ]
+    },
+    {
+      "name": "Get fairness report for the rotation",
+      "request": {
+        "method": "GET",
+        "description": "Get fairness report for the rotation\n\nResponses:\n- 200: Fairness report with per-engineer breakdown.\n- 404: Response\n- 500: Response",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/rotations/:rotationId/fairness?windowDays={{windowDays}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "rotations",
+            ":rotationId",
+            "fairness"
+          ],
+          "query": [
+            {
+              "key": "windowDays",
+              "value": "{{windowDays}}",
+              "disabled": true,
+              "description": "How far back to analyze (days)."
+            }
+          ],
+          "variable": [
+            {
+              "key": "rotationId",
+              "value": "{{rotationId}}",
+              "description": "Unique identifier of the rotation."
+            }
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "200 Fairness report with per-engineer breakdown.",
+          "originalRequest": {
+            "method": "GET",
+            "description": "Get fairness report for the rotation\n\nResponses:\n- 200: Fairness report with per-engineer breakdown.\n- 404: Response\n- 500: Response",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/rotations/:rotationId/fairness?windowDays={{windowDays}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rotations",
+                ":rotationId",
+                "fairness"
+              ],
+              "query": [
+                {
+                  "key": "windowDays",
+                  "value": "{{windowDays}}",
+                  "disabled": true,
+                  "description": "How far back to analyze (days)."
+                }
+              ],
+              "variable": [
+                {
+                  "key": "rotationId",
+                  "value": "{{rotationId}}",
+                  "description": "Unique identifier of the rotation."
+                }
+              ]
+            }
+          },
+          "status": "Fairness report with per-engineer breakdown.",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "body": ""
+        },
+        {
+          "name": "404",
+          "originalRequest": {
+            "method": "GET",
+            "description": "Get fairness report for the rotation\n\nResponses:\n- 200: Fairness report with per-engineer breakdown.\n- 404: Response\n- 500: Response",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/rotations/:rotationId/fairness?windowDays={{windowDays}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rotations",
+                ":rotationId",
+                "fairness"
+              ],
+              "query": [
+                {
+                  "key": "windowDays",
+                  "value": "{{windowDays}}",
+                  "disabled": true,
+                  "description": "How far back to analyze (days)."
+                }
+              ],
+              "variable": [
+                {
+                  "key": "rotationId",
+                  "value": "{{rotationId}}",
+                  "description": "Unique identifier of the rotation."
+                }
+              ]
+            }
+          },
+          "status": "404",
+          "code": 404,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "body": ""
+        },
+        {
+          "name": "500",
+          "originalRequest": {
+            "method": "GET",
+            "description": "Get fairness report for the rotation\n\nResponses:\n- 200: Fairness report with per-engineer breakdown.\n- 404: Response\n- 500: Response",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/rotations/:rotationId/fairness?windowDays={{windowDays}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rotations",
+                ":rotationId",
+                "fairness"
+              ],
+              "query": [
+                {
+                  "key": "windowDays",
+                  "value": "{{windowDays}}",
+                  "disabled": true,
+                  "description": "How far back to analyze (days)."
+                }
+              ],
+              "variable": [
+                {
+                  "key": "rotationId",
+                  "value": "{{rotationId}}",
+                  "description": "Unique identifier of the rotation."
+                }
+              ]
+            }
+          },
+          "status": "500",
+          "code": 500,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "body": ""
+        }
+      ]
+    }
+  ]
+}
