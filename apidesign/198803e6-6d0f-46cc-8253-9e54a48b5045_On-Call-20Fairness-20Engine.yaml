@@ -1,0 +1,690 @@
+openapi: 3.0.3
+info:
+  title: On-Call Fairness Engine
+  version: 1.0.0
+  description: |
+    Intelligent on-call rotation management platform. Balances on-call burden 
+    fairly across engineers by considering weekends, holidays, night shifts, 
+    incident load, and personal preferences. Tracks burnout risk, enforces 
+    labor regulations, and provides transparent fairness scores so every 
+    engineer sees they are being treated equally.
+  contact:
+    name: ForgeSphere SRE Operations
+    email: sre-ops@forgesphere.example.com
+
+servers:
+  - url: https://oncallfairness.forgesphere.lightning.com/v1
+    description: Production Server
+  - url: http://localhost:8130/v1
+    description: Local Development Server
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Rotations
+    description: Manage on-call rotations and schedules.
+  - name: Fairness
+    description: Track and analyze fairness metrics across the team.
+
+paths:
+  # ==================== 1. CREATE A ROTATION ====================
+  /rotations:
+    post:
+      tags: [Rotations]
+      summary: Create a new on-call rotation
+      description: |
+        Defines a new on-call rotation for a team. The engine automatically 
+        generates a schedule that balances burden across all members, 
+        respecting each person's constraints, holiday preferences, and 
+        labor regulations.
+      operationId: createRotation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [rotationName, teamName, schedule, members, durationWeeks]
+              properties:
+                rotationName:
+                  type: string
+                  description: "Human-readable name for the rotation."
+                  example: "payments-primary-oncall"
+                teamName:
+                  type: string
+                  description: "Team that owns this rotation."
+                  example: "payments-team"
+                schedule:
+                  type: object
+                  required: [shiftDuration, shiftStartHour]
+                  properties:
+                    shiftDuration:
+                      type: string
+                      enum: [6_HOURS, 12_HOURS, 24_HOURS, 1_WEEK]
+                      description: "How long each on-call shift lasts."
+                      example: "24_HOURS"
+                    shiftStartHour:
+                      type: integer
+                      minimum: 0
+                      maximum: 23
+                      description: "Hour of day (UTC) when shifts rotate."
+                      example: 9
+                    weekdaysOnly:
+                      type: boolean
+                      default: false
+                      description: "If true, weekends are handled separately."
+                  example:
+                    shiftDuration: "24_HOURS"
+                    shiftStartHour: 9
+                members:
+                  type: array
+                  description: "Engineers in the rotation."
+                  items:
+                    type: object
+                    required: [engineerId, name, constraints]
+                    properties:
+                      engineerId:
+                        type: string
+                        example: "amit.kumar@forgesphere.example.com"
+                      name:
+                        type: string
+                        example: "Amit Kumar"
+                      seniority:
+                        type: string
+                        enum: [JUNIOR, MID, SENIOR, STAFF, PRINCIPAL]
+                        example: "SENIOR"
+                      constraints:
+                        type: object
+                        properties:
+                          noWeekends:
+                            type: boolean
+                            example: false
+                          noNights:
+                            type: boolean
+                            example: true
+                          preferredDays:
+                            type: array
+                            items:
+                              type: string
+                              enum: [MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY]
+                            example: ["MONDAY", "TUESDAY", "WEDNESDAY"]
+                          vacationDates:
+                            type: array
+                            items:
+                              type: string
+                              format: date
+                            example: ["2026-12-20", "2026-12-21", "2026-12-22"]
+                          maxShiftsPerMonth:
+                            type: integer
+                            example: 5
+                durationWeeks:
+                  type: integer
+                  minimum: 1
+                  maximum: 52
+                  description: "How many weeks to schedule ahead."
+                  example: 8
+                fairnessPolicy:
+                  type: object
+                  description: "Rules for balancing shifts."
+                  properties:
+                    weightWeekends:
+                      type: number
+                      description: "Weight multiplier for weekend shifts."
+                      example: 2.0
+                    weightNights:
+                      type: number
+                      description: "Weight multiplier for night shifts."
+                      example: 1.5
+                    weightHolidays:
+                      type: number
+                      description: "Weight multiplier for holiday shifts."
+                      example: 3.0
+                    maxConsecutiveShifts:
+                      type: integer
+                      example: 3
+                    minRestHoursBetweenShifts:
+                      type: integer
+                      example: 12
+      responses:
+        '201':
+          description: Rotation created and schedule generated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rotation'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: A rotation with this name already exists for the team.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  # ==================== 2. GET SCHEDULE ====================
+  /rotations/{rotationId}/schedule:
+    get:
+      tags: [Rotations]
+      summary: Get the generated on-call schedule
+      description: |
+        Returns the full schedule for a rotation — who is on-call for each 
+        shift — along with fairness scores per engineer and any warnings 
+        about conflicting constraints.
+      operationId: getRotationSchedule
+      parameters:
+        - name: rotationId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: "Unique identifier of the rotation."
+          example: "9c8f1a3b-6d7e-4a12-8f5e-123456789abc"
+        - name: fromDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: "Start date of the schedule window."
+          example: "2026-10-01"
+        - name: toDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: "End date of the schedule window."
+          example: "2026-10-31"
+      responses:
+        '200':
+          description: On-call schedule with fairness analysis.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Schedule'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  # ==================== 3. SWAP A SHIFT ====================
+  /rotations/{rotationId}/shifts/{shiftId}/swap:
+    post:
+      tags: [Rotations]
+      summary: Request a shift swap between two engineers
+      description: |
+        Requests a swap of an on-call shift from one engineer to another. 
+        The engine validates that the swap does not break fairness rules, 
+        violate constraints, or exceed any engineer's monthly limit. 
+        Both engineers must confirm.
+      operationId: swapShift
+      parameters:
+        - name: rotationId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: "Unique identifier of the rotation."
+        - name: shiftId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: "Unique identifier of the shift."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [requestedBy, swapWith, reason]
+              properties:
+                requestedBy:
+                  type: string
+                  description: "Engineer currently assigned to the shift."
+                  example: "amit.kumar@forgesphere.example.com"
+                swapWith:
+                  type: string
+                  description: "Engineer who will take the shift."
+                  example: "priya.sharma@forgesphere.example.com"
+                reason:
+                  type: string
+                  minLength: 10
+                  description: "Reason for the swap (min 10 chars)."
+                  example: "Family emergency; need weekend off."
+                notifyChannels:
+                  type: array
+                  items:
+                    type: string
+                    enum: [EMAIL, SLACK, PAGERDUTY, WEBHOOK]
+                  description: "Where to send swap notifications."
+                  example: ["SLACK"]
+      responses:
+        '200':
+          description: Swap applied and schedule updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShiftSwap'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Swap would violate fairness rules or constraints.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  # ==================== 4. GET FAIRNESS REPORT ====================
+  /rotations/{rotationId}/fairness:
+    get:
+      tags: [Fairness]
+      summary: Get fairness report for the rotation
+      description: |
+        Returns a detailed fairness report — per-engineer burden score, 
+        weekend/night/holiday distribution, and burnout risk indicators. 
+        Used for quarterly reviews to ensure equitable workload distribution.
+      operationId: getFairnessReport
+      parameters:
+        - name: rotationId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: "Unique identifier of the rotation."
+          example: "9c8f1a3b-6d7e-4a12-8f5e-123456789abc"
+        - name: windowDays
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 90
+            minimum: 30
+            maximum: 365
+          description: "How far back to analyze (days)."
+          example: 90
+      responses:
+        '200':
+          description: Fairness report with per-engineer breakdown.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FairnessReport'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: "JWT token issued to team leads or SRE managers."
+
+  schemas:
+    Rotation:
+      type: object
+      required: [rotationId, rotationName, teamName, status, schedule, members, createdAt]
+      properties:
+        rotationId:
+          type: string
+          format: uuid
+          example: "9c8f1a3b-6d7e-4a12-8f5e-123456789abc"
+        rotationName:
+          type: string
+          example: "payments-primary-oncall"
+        teamName:
+          type: string
+          example: "payments-team"
+        status:
+          type: string
+          enum: [DRAFT, ACTIVE, PAUSED, ARCHIVED]
+          example: "ACTIVE"
+        schedule:
+          type: object
+          properties:
+            shiftDuration:
+              type: string
+              enum: [6_HOURS, 12_HOURS, 24_HOURS, 1_WEEK]
+              example: "24_HOURS"
+            shiftStartHour:
+              type: integer
+              example: 9
+        members:
+          type: array
+          items:
+            type: object
+            properties:
+              engineerId:
+                type: string
+                example: "amit.kumar@forgesphere.example.com"
+              name:
+                type: string
+                example: "Amit Kumar"
+              seniority:
+                type: string
+                enum: [JUNIOR, MID, SENIOR, STAFF, PRINCIPAL]
+                example: "SENIOR"
+              currentShiftCount:
+                type: integer
+                example: 4
+              fairnessScore:
+                type: number
+                description: "Higher score = more shifts taken. Target is equal across team."
+                example: 82.5
+        durationWeeks:
+          type: integer
+          example: 8
+        fairnessPolicy:
+          type: object
+          properties:
+            weightWeekends:
+              type: number
+              example: 2.0
+            weightNights:
+              type: number
+              example: 1.5
+            weightHolidays:
+              type: number
+              example: 3.0
+            maxConsecutiveShifts:
+              type: integer
+              example: 3
+            minRestHoursBetweenShifts:
+              type: integer
+              example: 12
+        createdAt:
+          type: string
+          format: date-time
+        generatedScheduleWeeks:
+          type: integer
+          example: 8
+
+    Schedule:
+      type: object
+      required: [rotationId, fromDate, toDate, shifts, fairnessSnapshot]
+      properties:
+        rotationId:
+          type: string
+          format: uuid
+        fromDate:
+          type: string
+          format: date
+          example: "2026-10-01"
+        toDate:
+          type: string
+          format: date
+          example: "2026-10-31"
+        shifts:
+          type: array
+          items:
+            type: object
+            required: [shiftId, startTime, endTime, assignedTo, shiftType]
+            properties:
+              shiftId:
+                type: string
+                format: uuid
+                example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
+              startTime:
+                type: string
+                format: date-time
+                example: "2026-10-01T09:00:00Z"
+              endTime:
+                type: string
+                format: date-time
+                example: "2026-10-02T09:00:00Z"
+              assignedTo:
+                type: string
+                example: "amit.kumar@forgesphere.example.com"
+              assignedToName:
+                type: string
+                example: "Amit Kumar"
+              shiftType:
+                type: string
+                enum: [WEEKDAY, WEEKEND, NIGHT, HOLIDAY]
+                example: "WEEKEND"
+              weight:
+                type: number
+                description: "Weighted cost of this shift per fairness policy."
+                example: 2.0
+              backupEngineer:
+                type: string
+                example: "priya.sharma@forgesphere.example.com"
+              swapEligible:
+                type: boolean
+                example: true
+        fairnessSnapshot:
+          type: object
+          description: "Fairness score per engineer at generation time."
+          additionalProperties:
+            type: number
+          example:
+            "amit.kumar@forgesphere.example.com": 82.5
+            "priya.sharma@forgesphere.example.com": 81.0
+            "rahul.verma@forgesphere.example.com": 79.5
+        warnings:
+          type: array
+          items:
+            type: string
+          example:
+            - "Amit has 3 consecutive weekend shifts in week 2 — consider manual adjustment."
+            - "Priya has vacation during week 4 — no shifts assigned."
+
+    ShiftSwap:
+      type: object
+      required: [swapId, rotationId, shiftId, fromEngineer, toEngineer, status, requestedAt]
+      properties:
+        swapId:
+          type: string
+          format: uuid
+          example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+        rotationId:
+          type: string
+          format: uuid
+        shiftId:
+          type: string
+          format: uuid
+        fromEngineer:
+          type: string
+          example: "amit.kumar@forgesphere.example.com"
+        toEngineer:
+          type: string
+          example: "priya.sharma@forgesphere.example.com"
+        status:
+          type: string
+          enum: [PENDING_CONFIRMATION, APPROVED, REJECTED, CANCELLED, APPLIED]
+          example: "PENDING_CONFIRMATION"
+        reason:
+          type: string
+          example: "Family emergency; need weekend off."
+        requestedAt:
+          type: string
+          format: date-time
+        appliedAt:
+          type: string
+          format: date-time
+        fairnessImpact:
+          type: object
+          description: "How this swap affects each engineer's fairness score."
+          properties:
+            fromEngineerBefore:
+              type: number
+              example: 82.5
+            fromEngineerAfter:
+              type: number
+              example: 80.5
+            toEngineerBefore:
+              type: number
+              example: 81.0
+            toEngineerAfter:
+              type: number
+              example: 83.0
+
+    FairnessReport:
+      type: object
+      required: [rotationId, windowDays, generatedAt, teamScore, engineerBreakdown, recommendations]
+      properties:
+        rotationId:
+          type: string
+          format: uuid
+        windowDays:
+          type: integer
+          example: 90
+        generatedAt:
+          type: string
+          format: date-time
+        teamScore:
+          type: object
+          required: [overallFairnessScore, fairnessGrade]
+          properties:
+            overallFairnessScore:
+              type: number
+              minimum: 0
+              maximum: 100
+              description: "100 = perfectly balanced."
+              example: 87
+            fairnessGrade:
+              type: string
+              enum: [EXCELLENT, GOOD, FAIR, UNFAIR, CRITICAL]
+              example: "GOOD"
+            standardDeviation:
+              type: number
+              description: "Lower is better — deviation of burden between engineers."
+              example: 4.2
+            giniCoefficient:
+              type: number
+              description: "0 = perfect equality, 1 = total inequality."
+              example: 0.08
+        engineerBreakdown:
+          type: array
+          items:
+            type: object
+            required: [engineerId, name, totalShifts, burdenScore, burnoutRisk]
+            properties:
+              engineerId:
+                type: string
+                example: "amit.kumar@forgesphere.example.com"
+              name:
+                type: string
+                example: "Amit Kumar"
+              totalShifts:
+                type: integer
+                example: 18
+              weekdayShifts:
+                type: integer
+                example: 10
+              weekendShifts:
+                type: integer
+                example: 4
+              nightShifts:
+                type: integer
+                example: 2
+              holidayShifts:
+                type: integer
+                example: 2
+              totalWeightedBurden:
+                type: number
+                description: "Weighted sum based on fairness policy."
+                example: 42.5
+              burdenScore:
+                type: number
+                description: "Normalized 0-100. Target is team average."
+                example: 82.5
+              fairnessDelta:
+                type: number
+                description: "Difference from team average (positive = more burden)."
+                example: 2.5
+              incidentsHandled:
+                type: integer
+                example: 8
+              afterHoursPages:
+                type: integer
+                example: 14
+              burnoutRisk:
+                type: string
+                enum: [LOW, MEDIUM, HIGH, CRITICAL]
+                example: "MEDIUM"
+              burnoutIndicators:
+                type: array
+                items:
+                  type: string
+                example:
+                  - "3 consecutive weekend shifts in October"
+                  - "14 after-hours pages in last 30 days"
+        rotationTrend:
+          type: array
+          description: "Fairness score over time."
+          items:
+            type: object
+            properties:
+              weekStartDate:
+                type: string
+                format: date
+                example: "2026-09-01"
+              fairnessScore:
+                type: number
+                example: 85.5
+        recommendations:
+          type: array
+          items:
+            type: string
+          example:
+            - "Rebalance Q4 weekends — Amit has 40% more than team average."
+            - "Add backup engineer for night shifts to reduce single-person risk."
+            - "Priya's night shift count is 3x team average — consider swapping."
+
+    ErrorResponse:
+      type: object
+      required: [status, message, timestamp, path]
+      properties:
+        status:
+          type: integer
+          example: 409
+        errorCode:
+          type: string
+          example: "FAIRNESS_VIOLATION"
+        message:
+          type: string
+          example: "Swap would push Priya above the maximum consecutive shift limit."
+        timestamp:
+          type: string
+          format: date-time
+        path:
+          type: string
+          example: "/v1/rotations/9c8f1a3b/shifts/a1b2c3d4/swap"
+        serviceTransactionId:
+          type: string
+          example: "523f52b2-64a5-465e-b245-3efbe78f70ae"
+
+  responses:
+    BadRequest:
+      description: Invalid request payload or missing required fields.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Rotation or shift not found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    InternalError:
+      description: Internal server error.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'

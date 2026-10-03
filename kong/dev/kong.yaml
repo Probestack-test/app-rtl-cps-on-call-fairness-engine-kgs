@@ -1,0 +1,89 @@
+_format_version: "3.0"
+_transform: true
+
+########################################################
+# SERVICES
+########################################################
+
+services:
+  - name: on-call-fairness-engine
+    host: on-call-fairness-engine
+    port: 443
+    protocol: https
+    path: /api
+    retries: 5
+    connect_timeout: 60000
+    write_timeout: 60000
+    read_timeout: 60000
+    routes:
+      - name: on-call-fairness-engine-post-api-v1-payments-rotations
+        protocols:
+          - https
+          - http
+        methods:
+          - POST
+        hosts:
+          - api.example.com
+        paths:
+          - /api/v1/payments/rotations
+        strip_path: true
+        preserve_host: false
+        https_redirect_status_code: 426
+      - name: on-call-fairness-engine-get-api-v1-payments-rotations-rotationid-schedule
+        protocols:
+          - https
+          - http
+        methods:
+          - GET
+        hosts:
+          - api.example.com
+        paths:
+          - /api/v1/payments/rotations/{rotationId}/schedule
+        strip_path: true
+        preserve_host: false
+        https_redirect_status_code: 426
+      - name: on-call-fairness-engine-post-api-v1-payments-rotations-rotationid-shifts-shiftid-swap
+        protocols:
+          - https
+          - http
+        methods:
+          - POST
+        hosts:
+          - api.example.com
+        paths:
+          - /api/v1/payments/rotations/{rotationId}/shifts/{shiftId}/swap
+        strip_path: true
+        preserve_host: false
+        https_redirect_status_code: 426
+      - name: on-call-fairness-engine-get-api-v1-payments-rotations-rotationid-fairness
+        protocols:
+          - https
+          - http
+        methods:
+          - GET
+        hosts:
+          - api.example.com
+        paths:
+          - /api/v1/payments/rotations/{rotationId}/fairness
+        strip_path: true
+        preserve_host: false
+        https_redirect_status_code: 426
+
+########################################################
+# PLUGINS
+########################################################
+
+plugins:
+  []
+
+########################################################
+# UPSTREAMS + TARGETS
+########################################################
+
+upstreams:
+  - name: on-call-fairness-engine
+    algorithm: round-robin
+    slots: 10000
+    targets:
+      - target: api.example.com:443
+        weight: 100
